@@ -1,5 +1,7 @@
 codeberg.org/pdwerryhouse/changedetection-client-go v0.0.2 h1:I1tFWiLbr4jU9JTGmATu+cZGocIeLfMuAyHVCUIRkNk=
 codeberg.org/pdwerryhouse/changedetection-client-go v0.0.2/go.mod h1:cWWvKIfXdSDZoXzoc6/T9w/PkMF5i341nXS806pF48M=
+codeberg.org/pdwerryhouse/changedetection-client-go v0.0.3 h1:klJUxtaYbKjGlxf1alDX0CmrD8qY3J8Ct88pzKHPJV0=
+codeberg.org/pdwerryhouse/changedetection-client-go v0.0.3/go.mod h1:/z6u++kzQy+r7NwwwiiRM6kt2mlRZqGSKzWtTvElD/k=
 github.com/bufbuild/protocompile v0.14.1 h1:iA73zAf/fyljNjQKwYzUHD6AD4R8KMasmwa/FBatYVw=
 github.com/bufbuild/protocompile v0.14.1/go.mod h1:ppVdAIhbr2H8asPk6k4pY7t9zB1OU5DoEw9xY/FUi1c=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=

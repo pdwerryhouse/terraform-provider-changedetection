@@ -154,6 +154,7 @@ func (p *changedetectionProvider) Configure(ctx context.Context, req provider.Co
 func (p *changedetectionProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		datasources.NewWatchesDataSource,
+		datasources.NewTagsDataSource,
 	}
 }
 
