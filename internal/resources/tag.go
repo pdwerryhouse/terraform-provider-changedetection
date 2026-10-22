@@ -59,7 +59,7 @@ func (r *tagResource) Metadata(_ context.Context, req resource.MetadataRequest, 
 
 func (r *tagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Create an changedetection.io Tag",
+		Description: "Create a changedetection.io Tag",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -72,11 +72,13 @@ func (r *tagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				Required:    true,
 			},
 			"notification_muted": schema.BoolAttribute{
-				Optional: true,
-				Computed: true,
+				Description: "True if notifications are muted for this tag.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"date_created": schema.Int64Attribute{
-				Computed: true,
+				Description: "The date at which the tag was created (seconds since Jan 1 1970).",
+				Computed:    true,
 			},
 		},
 	}

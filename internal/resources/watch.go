@@ -76,7 +76,7 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Required:    true,
 			},
 			"link_to_open": schema.StringAttribute{
-				Description: "The watch's link to open.",
+				Description: "Optional human facing URL to open in the browser.",
 				Optional:    true,
 			},
 		},

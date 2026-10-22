@@ -147,26 +147,32 @@ func (d *watchesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 							Computed:    true,
 						},
 						"link": schema.StringAttribute{
-							Computed: true,
+							Description: "The watch rendered in jinja2 markup.",
+							Computed:    true,
 						},
 						"open_link": schema.StringAttribute{
-							Computed: true,
+							Description: "The url a human should be sent to if link_to_open is set, otherwise url.",
+							Computed:    true,
 						},
 						"link_to_open": schema.StringAttribute{
-							Computed: true,
+							Description: "Optional human facing URL to open in the browser.",
+							Computed:    true,
 						},
 						"page_title": schema.StringAttribute{
 							Description: "The watch's page title.",
 							Computed:    true,
 						},
 						"paused": schema.BoolAttribute{
-							Computed: true,
+							Description: "Whether the monitor for this watch is paused or not.",
+							Computed:    true,
 						},
 						"notification_muted": schema.BoolAttribute{
-							Computed: true,
+							Description: "Whether notifications are muted or not.",
+							Computed:    true,
 						},
 						"last_checked": schema.Int64Attribute{
-							Computed: true,
+							Description: "Unix time of the last check.",
+							Computed:    true,
 						},
 						"tags": schema.ListAttribute{
 							Description: "The watch's tags.",

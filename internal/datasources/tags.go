@@ -123,10 +123,12 @@ func (d *tagsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 							Computed:    true,
 						},
 						"notification_muted": schema.BoolAttribute{
-							Computed: true,
+							Description: "True if notifications are muted for this tag.",
+							Computed:    true,
 						},
 						"date_created": schema.Int64Attribute{
-							Computed: true,
+							Description: "The date at which the tag was created (seconds since Jan 1 1970).",
+							Computed:    true,
 						},
 					},
 				},
