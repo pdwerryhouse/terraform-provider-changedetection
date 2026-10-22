@@ -161,5 +161,6 @@ func (p *changedetectionProvider) DataSources(ctx context.Context) []func() data
 func (p *changedetectionProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		resources.NewWatchResource,
+		resources.NewTagResource,
 	}
 }
