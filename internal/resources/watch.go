@@ -49,10 +49,11 @@ type watchResource struct {
 
 type watchResourceModel struct {
 	ID           types.String `tfsdk:"id"`
-	Title        types.String `tfsdk:"title"`
+	FetchBackend types.String `tfsdk:"fetch_backend"`
 	Url          types.String `tfsdk:"url"`
 	LinkToOpen   types.String `tfsdk:"link_to_open"`
-	FetchBackend types.String `tfsdk:"fetch_backend"`
+	Processor    types.String `tfsdk:"processor"`
+	Title        types.String `tfsdk:"title"`
 }
 
 func (r *watchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -76,6 +77,12 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"url": schema.StringAttribute{
 				Description: "The watch url.",
 				Required:    true,
+			},
+			"processor": schema.StringAttribute{
+				Description: "Processor mode to be used for change detection. text_json_diff or restock_diff.",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("text_json_diff"),
 			},
 			"link_to_open": schema.StringAttribute{
 				Description: "Optional human facing URL to open in the browser.",
@@ -104,6 +111,7 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 		URL:          plan.Url.ValueString(),
 		LinkToOpen:   plan.LinkToOpen.ValueStringPointer(),
 		FetchBackend: plan.FetchBackend.ValueStringPointer(),
+		Processor:    plan.Processor.ValueStringPointer(),
 	}
 
 	newWatch, err := r.client.CreateWatch(watch)
@@ -145,6 +153,7 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	state.Url = types.StringValue(watch.URL)
 	state.LinkToOpen = types.StringValue(watch.LinkToOpen)
 	state.FetchBackend = types.StringValue(watch.FetchBackend)
+	state.Processor = types.StringValue(watch.Processor)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -166,6 +175,7 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		URL:          plan.Url.ValueStringPointer(),
 		LinkToOpen:   plan.LinkToOpen.ValueStringPointer(),
 		FetchBackend: plan.FetchBackend.ValueStringPointer(),
+		Processor:    plan.Processor.ValueStringPointer(),
 	}
 
 	err := r.client.UpdateWatch(plan.ID.ValueString(), &watch)
