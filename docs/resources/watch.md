@@ -28,6 +28,7 @@ resource "changedetection_watch" "localhost" {
 
 ### Optional
 
+- `fetch_backend` (String) Backend to use for fetching content: system, html_requests, html_webdriver, extra_browser_* . Default is system.
 - `link_to_open` (String) Optional human facing URL to open in the browser.
 - `title` (String) The watch's title.
 
