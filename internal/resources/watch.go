@@ -23,9 +23,11 @@ import (
 
 	changedetectionclient "codeberg.org/pdwerryhouse/changedetection-client-go/changedetection"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -54,6 +56,7 @@ type watchResourceModel struct {
 	LinkToOpen   types.String `tfsdk:"link_to_open"`
 	Processor    types.String `tfsdk:"processor"`
 	Title        types.String `tfsdk:"title"`
+	Tags         types.List   `tfsdk:"tags"`
 }
 
 func (r *watchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -87,12 +90,23 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"link_to_open": schema.StringAttribute{
 				Description: "Optional human facing URL to open in the browser.",
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 			},
 			"fetch_backend": schema.StringAttribute{
 				Description: "Backend to use for fetching content: system, html_requests, html_webdriver, extra_browser_* . Default is system.",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("system"),
+			},
+			"tags": schema.ListAttribute{
+				Description: "List of tag uuids.",
+				ElementType: types.StringType,
+				Optional:    true,
+				Computed:    true,
+				Default: listdefault.StaticValue(
+					types.ListValueMust(types.StringType, []attr.Value{}),
+				),
 			},
 		},
 	}
@@ -106,12 +120,20 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	var tags []string
+	diags = plan.Tags.ElementsAs(ctx, &tags, false)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	watch := changedetectionclient.CreateWatchReq{
 		Title:        plan.Title.ValueStringPointer(),
 		URL:          plan.Url.ValueString(),
 		LinkToOpen:   plan.LinkToOpen.ValueStringPointer(),
 		FetchBackend: plan.FetchBackend.ValueStringPointer(),
 		Processor:    plan.Processor.ValueStringPointer(),
+		Tags:         &tags,
 	}
 
 	newWatch, err := r.client.CreateWatch(watch)
@@ -149,11 +171,18 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
+	tags, diags := types.ListValueFrom(ctx, types.StringType, watch.Tags)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	state.Title = types.StringValue(watch.Title)
 	state.Url = types.StringValue(watch.URL)
 	state.LinkToOpen = types.StringValue(watch.LinkToOpen)
 	state.FetchBackend = types.StringValue(watch.FetchBackend)
 	state.Processor = types.StringValue(watch.Processor)
+	state.Tags = tags
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -170,12 +199,20 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	var tags []string
+	diags = plan.Tags.ElementsAs(ctx, &tags, false)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	watch := changedetectionclient.UpdateWatchReq{
 		Title:        plan.Title.ValueStringPointer(),
 		URL:          plan.Url.ValueStringPointer(),
 		LinkToOpen:   plan.LinkToOpen.ValueStringPointer(),
 		FetchBackend: plan.FetchBackend.ValueStringPointer(),
 		Processor:    plan.Processor.ValueStringPointer(),
+		Tags:         &tags,
 	}
 
 	err := r.client.UpdateWatch(plan.ID.ValueString(), &watch)
