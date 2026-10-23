@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -47,10 +48,11 @@ type watchResource struct {
 }
 
 type watchResourceModel struct {
-	ID         types.String `tfsdk:"id"`
-	Title      types.String `tfsdk:"title"`
-	Url        types.String `tfsdk:"url"`
-	LinkToOpen types.String `tfsdk:"link_to_open"`
+	ID           types.String `tfsdk:"id"`
+	Title        types.String `tfsdk:"title"`
+	Url          types.String `tfsdk:"url"`
+	LinkToOpen   types.String `tfsdk:"link_to_open"`
+	FetchBackend types.String `tfsdk:"fetch_backend"`
 }
 
 func (r *watchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -79,6 +81,12 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Description: "Optional human facing URL to open in the browser.",
 				Optional:    true,
 			},
+			"fetch_backend": schema.StringAttribute{
+				Description: "Backend to use for fetching content: system, html_requests, html_webdriver, extra_browser_* . Default is system.",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("system"),
+			},
 		},
 	}
 }
@@ -92,9 +100,10 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	watch := changedetectionclient.CreateWatchReq{
-		Title:      plan.Title.ValueStringPointer(),
-		URL:        plan.Url.ValueString(),
-		LinkToOpen: plan.LinkToOpen.ValueStringPointer(),
+		Title:        plan.Title.ValueStringPointer(),
+		URL:          plan.Url.ValueString(),
+		LinkToOpen:   plan.LinkToOpen.ValueStringPointer(),
+		FetchBackend: plan.FetchBackend.ValueStringPointer(),
 	}
 
 	newWatch, err := r.client.CreateWatch(watch)
@@ -135,6 +144,7 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	state.Title = types.StringValue(watch.Title)
 	state.Url = types.StringValue(watch.URL)
 	state.LinkToOpen = types.StringValue(watch.LinkToOpen)
+	state.FetchBackend = types.StringValue(watch.FetchBackend)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -152,9 +162,10 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	watch := changedetectionclient.UpdateWatchReq{
-		Title:      plan.Title.ValueStringPointer(),
-		URL:        plan.Url.ValueStringPointer(),
-		LinkToOpen: plan.LinkToOpen.ValueStringPointer(),
+		Title:        plan.Title.ValueStringPointer(),
+		URL:          plan.Url.ValueStringPointer(),
+		LinkToOpen:   plan.LinkToOpen.ValueStringPointer(),
+		FetchBackend: plan.FetchBackend.ValueStringPointer(),
 	}
 
 	err := r.client.UpdateWatch(plan.ID.ValueString(), &watch)
