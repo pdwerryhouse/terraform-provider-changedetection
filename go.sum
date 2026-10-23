@@ -2,6 +2,10 @@ codeberg.org/pdwerryhouse/changedetection-client-go v0.0.2 h1:I1tFWiLbr4jU9JTGmA
 codeberg.org/pdwerryhouse/changedetection-client-go v0.0.2/go.mod h1:cWWvKIfXdSDZoXzoc6/T9w/PkMF5i341nXS806pF48M=
 codeberg.org/pdwerryhouse/changedetection-client-go v0.0.3 h1:klJUxtaYbKjGlxf1alDX0CmrD8qY3J8Ct88pzKHPJV0=
 codeberg.org/pdwerryhouse/changedetection-client-go v0.0.3/go.mod h1:/z6u++kzQy+r7NwwwiiRM6kt2mlRZqGSKzWtTvElD/k=
+codeberg.org/pdwerryhouse/changedetection-client-go v0.0.4 h1:ncAqvRTexNfJbvg+p/BspvL/BfbAnmMroOeGweNYA3s=
+codeberg.org/pdwerryhouse/changedetection-client-go v0.0.4/go.mod h1:/z6u++kzQy+r7NwwwiiRM6kt2mlRZqGSKzWtTvElD/k=
+codeberg.org/pdwerryhouse/changedetection-client-go v0.0.5 h1:Le4IEIEUNahf9jAWBLQ1tdyfy4fDykmO0rTW1NdyW8s=
+codeberg.org/pdwerryhouse/changedetection-client-go v0.0.5/go.mod h1:/z6u++kzQy+r7NwwwiiRM6kt2mlRZqGSKzWtTvElD/k=
 dario.cat/mergo v1.0.1 h1:Ra4+bf83h2ztPIQYNP99R6m+Y7KfnARDfID+a+vLl4s=
 dario.cat/mergo v1.0.1/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
 github.com/AlecAivazis/survey/v2 v2.3.7 h1:6I/u8FvytdGsgonrYsVn2t8t4QiRnh6QSTqkkhIiSjQ=

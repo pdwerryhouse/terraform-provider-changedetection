@@ -42,7 +42,7 @@ type tagsDataSource struct {
 }
 
 type tagsDataSourceModel struct {
-	Tag []tagsModel `tfsdk:"tags"`
+	Tag map[string]tagsModel `tfsdk:"tags"`
 }
 
 type tagsModel struct {
@@ -68,6 +68,8 @@ func (d *tagsDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
+	state.Tag = make(map[string]tagsModel)
+
 	for id, tag := range tags {
 
 		tagState := tagsModel{
@@ -77,7 +79,7 @@ func (d *tagsDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			DateCreated:       types.Int64Value(tag.DateCreated),
 		}
 
-		state.Tag = append(state.Tag, tagState)
+		state.Tag[id] = tagState
 	}
 
 	diags := resp.State.Set(ctx, &state)
@@ -110,7 +112,7 @@ func (d *tagsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 	resp.Schema = schema.Schema{
 		Description: "Fetches the list of tags.",
 		Attributes: map[string]schema.Attribute{
-			"tags": schema.ListNestedAttribute{
+			"tags": schema.MapNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{

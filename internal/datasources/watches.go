@@ -42,7 +42,7 @@ type watchesDataSource struct {
 }
 
 type watchesDataSourceModel struct {
-	Watch []watchesModel `tfsdk:"watches"`
+	Watch map[string]watchesModel `tfsdk:"watches"`
 }
 
 type watchesModel struct {
@@ -75,6 +75,8 @@ func (d *watchesDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
+	state.Watch = make(map[string]watchesModel)
+
 	for id, watch := range watches {
 
 		var tags []types.String
@@ -97,7 +99,7 @@ func (d *watchesDataSource) Read(ctx context.Context, req datasource.ReadRequest
 			Tags:              tags,
 		}
 
-		state.Watch = append(state.Watch, watchState)
+		state.Watch[id] = watchState
 	}
 
 	diags := resp.State.Set(ctx, &state)
@@ -130,7 +132,7 @@ func (d *watchesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Description: "Fetches the list of watches.",
 		Attributes: map[string]schema.Attribute{
-			"watches": schema.ListNestedAttribute{
+			"watches": schema.MapNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{

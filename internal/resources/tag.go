@@ -51,6 +51,7 @@ type tagResourceModel struct {
 	Title             types.String `tfsdk:"title"`
 	NotificationMuted types.Bool   `tfsdk:"notification_muted"`
 	DateCreated       types.Int64  `tfsdk:"date_created"`
+	TagColour         types.String `tfsdk:"tag_colour"`
 }
 
 func (r *tagResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -80,6 +81,11 @@ func (r *tagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				Description: "The date at which the tag was created (seconds since Jan 1 1970).",
 				Computed:    true,
 			},
+			"tag_colour": schema.StringAttribute{
+				Description: "The tag's colour.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -95,6 +101,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 	tag := changedetectionclient.CreateTagReq{
 		Title:             plan.Title.ValueString(),
 		NotificationMuted: plan.NotificationMuted.ValueBoolPointer(),
+		TagColour:         plan.TagColour.ValueStringPointer(),
 	}
 
 	newTag, err := r.client.CreateTag(tag)
@@ -119,6 +126,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	plan.DateCreated = types.Int64Value(fetchTag.DateCreated)
 	plan.NotificationMuted = types.BoolValue(fetchTag.NotificationMuted)
+	plan.TagColour = types.StringValue(fetchTag.TagColour)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -147,6 +155,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	state.Title = types.StringValue(tag.Title)
 	state.NotificationMuted = types.BoolValue(tag.NotificationMuted)
 	state.DateCreated = types.Int64Value(tag.DateCreated)
+	state.TagColour = types.StringValue(tag.TagColour)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -168,6 +177,7 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	tag := changedetectionclient.UpdateTagReq{
 		Title:             plan.Title.ValueStringPointer(),
 		NotificationMuted: plan.NotificationMuted.ValueBoolPointer(),
+		TagColour:         plan.TagColour.ValueStringPointer(),
 	}
 
 	err := r.client.UpdateTag(plan.ID.ValueString(), &tag)
@@ -191,6 +201,7 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	plan.DateCreated = types.Int64Value(fetchTag.DateCreated)
 	plan.NotificationMuted = types.BoolValue(fetchTag.NotificationMuted)
+	plan.TagColour = types.StringValue(fetchTag.TagColour)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
