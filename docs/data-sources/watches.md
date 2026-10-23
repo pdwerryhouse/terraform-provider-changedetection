@@ -26,7 +26,7 @@ output "example" {
 
 ### Read-Only
 
-- `watches` (Attributes List) (see [below for nested schema](#nestedatt--watches))
+- `watches` (Attributes Map) (see [below for nested schema](#nestedatt--watches))
 
 <a id="nestedatt--watches"></a>
 ### Nested Schema for `watches`

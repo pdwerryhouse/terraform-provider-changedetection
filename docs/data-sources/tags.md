@@ -26,7 +26,7 @@ output "example" {
 
 ### Read-Only
 
-- `tags` (Attributes List) (see [below for nested schema](#nestedatt--tags))
+- `tags` (Attributes Map) (see [below for nested schema](#nestedatt--tags))
 
 <a id="nestedatt--tags"></a>
 ### Nested Schema for `tags`

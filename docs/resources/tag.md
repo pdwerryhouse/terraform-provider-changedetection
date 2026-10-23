@@ -16,6 +16,7 @@ Create a changedetection.io Tag
 resource "changedetection_tag" "test" {
   title              = "test"
   notification_muted = false
+  tag_colour         = "#aaaaaa"
 }
 ```
 
@@ -29,6 +30,7 @@ resource "changedetection_tag" "test" {
 ### Optional
 
 - `notification_muted` (Boolean) True if notifications are muted for this tag.
+- `tag_colour` (String) The tag's colour.
 
 ### Read-Only
 
