@@ -30,6 +30,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -55,6 +56,7 @@ type watchResourceModel struct {
 	ID                types.String `tfsdk:"id"`
 	Body              types.String `tfsdk:"body"`
 	FetchBackend      types.String `tfsdk:"fetch_backend"`
+	Headers           types.Map    `tfsdk:"headers"`
 	IgnoreStatusCodes types.Bool   `tfsdk:"ignore_status_codes"`
 	LinkToOpen        types.String `tfsdk:"link_to_open"`
 	Method            types.String `tfsdk:"method"`
@@ -93,6 +95,15 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("system"),
+			},
+			"headers": schema.MapAttribute{
+				Description: "Map of headers.",
+				ElementType: types.StringType,
+				Optional:    true,
+				Computed:    true,
+				Default: mapdefault.StaticValue(
+					types.MapValueMust(types.StringType, map[string]attr.Value{}),
+				),
 			},
 			"ignore_status_codes": schema.BoolAttribute{
 				Description: "Ignore HTTP status code errors. Default is false.",
@@ -178,6 +189,13 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	var headers map[string]string
+	diags = plan.Headers.ElementsAs(ctx, &headers, false)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	watch := changedetectionclient.CreateWatchReq{
 		Body:              plan.Body.ValueStringPointer(),
 		FetchBackend:      plan.FetchBackend.ValueStringPointer(),
@@ -235,8 +253,15 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
+	headers, diags := types.MapValueFrom(ctx, types.StringType, watch.Headers)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	state.Body = types.StringValue(watch.Body)
 	state.FetchBackend = types.StringValue(watch.FetchBackend)
+	state.Headers = headers
 	state.IgnoreStatusCodes = types.BoolValue(watch.IgnoreStatusCodes)
 	state.LinkToOpen = types.StringValue(watch.LinkToOpen)
 	state.Method = types.StringValue(watch.Method)
@@ -271,9 +296,17 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	var headers map[string]string
+	diags = plan.Headers.ElementsAs(ctx, &headers, false)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	watch := changedetectionclient.UpdateWatchReq{
 		Body:              plan.Body.ValueStringPointer(),
 		FetchBackend:      plan.FetchBackend.ValueStringPointer(),
+		Headers:           &headers,
 		IgnoreStatusCodes: plan.IgnoreStatusCodes.ValueBoolPointer(),
 		LinkToOpen:        plan.LinkToOpen.ValueStringPointer(),
 		Method:            plan.Method.ValueStringPointer(),

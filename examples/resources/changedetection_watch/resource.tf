@@ -21,4 +21,7 @@ resource "changedetection_watch" "localhost" {
   webdriver_delay     = 3
   paused              = true
   ignore_status_codes = true
+  headers = {
+    "X-Whatever" = "something"
+  }
 }

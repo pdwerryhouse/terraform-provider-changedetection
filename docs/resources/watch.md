@@ -35,6 +35,9 @@ resource "changedetection_watch" "localhost" {
   webdriver_delay     = 3
   paused              = true
   ignore_status_codes = true
+  headers = {
+    "X-Whatever" = "something"
+  }
 }
 ```
 
@@ -49,6 +52,7 @@ resource "changedetection_watch" "localhost" {
 
 - `body` (String) HTTP Request Body.
 - `fetch_backend` (String) Backend to use for fetching content: system, html_requests, html_webdriver, extra_browser_* . Default is system.
+- `headers` (Map of String) Map of headers.
 - `ignore_status_codes` (Boolean) Ignore HTTP status code errors. Default is false.
 - `link_to_open` (String) Optional human facing URL to open in the browser.
 - `method` (String) HTTP method to use (GET, POST, DELETE, PUT).
