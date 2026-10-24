@@ -51,9 +51,21 @@ provider "changedetection" {
   apikey   = "some_api_key"
 }
 
-resource "changedetection_watch" "abc" {
-  album_name  = "ABC"
-  description = "https://abc.net.au/"
+resource "changedetection_tag" "things" {
+  title = "things"
+  tag_colour = "#112233"
+}
+
+resource "changedetection_watch" "something" {
+  title = "Something"
+  url = "https://example.com/item"
+  method = "GET"
+  notification_muted = true
+  processor = "restock_diff"
+  tags = [ changedetection_tag.things.id ]
+  webdriver_delay = 3
+  paused = true
+  ignore_status_codes = true
 }
 ```
 
