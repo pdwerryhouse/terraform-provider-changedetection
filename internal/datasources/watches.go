@@ -86,17 +86,14 @@ func (d *watchesDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		}
 
 		watchState := watchesModel{
-			ID:                types.StringValue(id),
-			Title:             types.StringValue(watch.Title),
-			PageTitle:         types.StringValue(watch.PageTitle),
-			Url:               types.StringValue(watch.URL),
-			Link:              types.StringValue(watch.Link),
-			OpenLink:          types.StringValue(watch.OpenLink),
-			LinkToOpen:        types.StringValue(watch.LinkToOpen),
-			Paused:            types.BoolValue(watch.Paused),
-			NotificationMuted: types.BoolValue(watch.NotificationMuted),
-			LastChecked:       types.Int64Value(watch.LastChecked),
-			Tags:              tags,
+			ID:          types.StringValue(id),
+			Title:       types.StringValue(watch.Title),
+			PageTitle:   types.StringValue(watch.PageTitle),
+			Url:         types.StringValue(watch.URL),
+			Link:        types.StringValue(watch.Link),
+			OpenLink:    types.StringValue(watch.OpenLink),
+			LastChecked: types.Int64Value(watch.LastChecked),
+			Tags:        tags,
 		}
 
 		state.Watch[id] = watchState

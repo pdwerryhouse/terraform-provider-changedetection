@@ -27,6 +27,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -50,13 +52,20 @@ type watchResource struct {
 }
 
 type watchResourceModel struct {
-	ID           types.String `tfsdk:"id"`
-	FetchBackend types.String `tfsdk:"fetch_backend"`
-	Url          types.String `tfsdk:"url"`
-	LinkToOpen   types.String `tfsdk:"link_to_open"`
-	Processor    types.String `tfsdk:"processor"`
-	Title        types.String `tfsdk:"title"`
-	Tags         types.List   `tfsdk:"tags"`
+	ID                types.String `tfsdk:"id"`
+	Body              types.String `tfsdk:"body"`
+	FetchBackend      types.String `tfsdk:"fetch_backend"`
+	IgnoreStatusCodes types.Bool   `tfsdk:"ignore_status_codes"`
+	LinkToOpen        types.String `tfsdk:"link_to_open"`
+	Method            types.String `tfsdk:"method"`
+	NotificationMuted types.Bool   `tfsdk:"notification_muted"`
+	Paused            types.Bool   `tfsdk:"paused"`
+	Processor         types.String `tfsdk:"processor"`
+	Proxy             types.String `tfsdk:"proxy"`
+	Tags              types.List   `tfsdk:"tags"`
+	Title             types.String `tfsdk:"title"`
+	WebdriverDelay    types.Int64  `tfsdk:"webdriver_delay"`
+	Url               types.String `tfsdk:"url"`
 }
 
 func (r *watchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -73,22 +82,8 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"title": schema.StringAttribute{
-				Description: "The watch's title.",
-				Optional:    true,
-			},
-			"url": schema.StringAttribute{
-				Description: "The watch url.",
-				Required:    true,
-			},
-			"processor": schema.StringAttribute{
-				Description: "Processor mode to be used for change detection. text_json_diff or restock_diff.",
-				Optional:    true,
-				Computed:    true,
-				Default:     stringdefault.StaticString("text_json_diff"),
-			},
-			"link_to_open": schema.StringAttribute{
-				Description: "Optional human facing URL to open in the browser.",
+			"body": schema.StringAttribute{
+				Description: "HTTP Request Body.",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString(""),
@@ -99,6 +94,48 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Computed:    true,
 				Default:     stringdefault.StaticString("system"),
 			},
+			"ignore_status_codes": schema.BoolAttribute{
+				Description: "Ignore HTTP status code errors. Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
+			"link_to_open": schema.StringAttribute{
+				Description: "Optional human facing URL to open in the browser.",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
+			},
+			"method": schema.StringAttribute{
+				Description: "HTTP method to use (GET, POST, DELETE, PUT).",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("GET"),
+			},
+			"notification_muted": schema.BoolAttribute{
+				Description: "Whether notifications are muted. Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
+			"paused": schema.BoolAttribute{
+				Description: "Whether the web page change monitor (watch) is paused.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
+			"processor": schema.StringAttribute{
+				Description: "Processor mode to be used for change detection. text_json_diff or restock_diff.",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("text_json_diff"),
+			},
+			"proxy": schema.StringAttribute{
+				Description: "Proxy configuration.",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
+			},
 			"tags": schema.ListAttribute{
 				Description: "List of tag uuids.",
 				ElementType: types.StringType,
@@ -107,6 +144,20 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Default: listdefault.StaticValue(
 					types.ListValueMust(types.StringType, []attr.Value{}),
 				),
+			},
+			"title": schema.StringAttribute{
+				Description: "The watch's title.",
+				Optional:    true,
+			},
+			"webdriver_delay": schema.Int64Attribute{
+				Description: "Delay in seconds for the webdriver.",
+				Optional:    true,
+				Computed:    true,
+				Default:     int64default.StaticInt64(0),
+			},
+			"url": schema.StringAttribute{
+				Description: "The watch url.",
+				Required:    true,
 			},
 		},
 	}
@@ -128,12 +179,19 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	watch := changedetectionclient.CreateWatchReq{
-		Title:        plan.Title.ValueStringPointer(),
-		URL:          plan.Url.ValueString(),
-		LinkToOpen:   plan.LinkToOpen.ValueStringPointer(),
-		FetchBackend: plan.FetchBackend.ValueStringPointer(),
-		Processor:    plan.Processor.ValueStringPointer(),
-		Tags:         &tags,
+		Body:              plan.Body.ValueStringPointer(),
+		FetchBackend:      plan.FetchBackend.ValueStringPointer(),
+		IgnoreStatusCodes: plan.IgnoreStatusCodes.ValueBoolPointer(),
+		LinkToOpen:        plan.LinkToOpen.ValueStringPointer(),
+		Method:            plan.Method.ValueStringPointer(),
+		NotificationMuted: plan.NotificationMuted.ValueBoolPointer(),
+		Paused:            plan.Paused.ValueBoolPointer(),
+		Processor:         plan.Processor.ValueStringPointer(),
+		Proxy:             plan.Proxy.ValueStringPointer(),
+		Tags:              &tags,
+		Title:             plan.Title.ValueStringPointer(),
+		URL:               plan.Url.ValueString(),
+		WebdriverDelay:    plan.WebdriverDelay.ValueInt64Pointer(),
 	}
 
 	newWatch, err := r.client.CreateWatch(watch)
@@ -177,12 +235,19 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	state.Title = types.StringValue(watch.Title)
-	state.Url = types.StringValue(watch.URL)
-	state.LinkToOpen = types.StringValue(watch.LinkToOpen)
+	state.Body = types.StringValue(watch.Body)
 	state.FetchBackend = types.StringValue(watch.FetchBackend)
+	state.IgnoreStatusCodes = types.BoolValue(watch.IgnoreStatusCodes)
+	state.LinkToOpen = types.StringValue(watch.LinkToOpen)
+	state.Method = types.StringValue(watch.Method)
+	state.NotificationMuted = types.BoolValue(watch.NotificationMuted)
+	state.Paused = types.BoolValue(watch.Paused)
 	state.Processor = types.StringValue(watch.Processor)
+	state.Proxy = types.StringValue(watch.Proxy)
 	state.Tags = tags
+	state.Title = types.StringValue(watch.Title)
+	state.WebdriverDelay = types.Int64Value(watch.WebdriverDelay)
+	state.Url = types.StringValue(watch.URL)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -207,12 +272,19 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	watch := changedetectionclient.UpdateWatchReq{
-		Title:        plan.Title.ValueStringPointer(),
-		URL:          plan.Url.ValueStringPointer(),
-		LinkToOpen:   plan.LinkToOpen.ValueStringPointer(),
-		FetchBackend: plan.FetchBackend.ValueStringPointer(),
-		Processor:    plan.Processor.ValueStringPointer(),
-		Tags:         &tags,
+		Body:              plan.Body.ValueStringPointer(),
+		FetchBackend:      plan.FetchBackend.ValueStringPointer(),
+		IgnoreStatusCodes: plan.IgnoreStatusCodes.ValueBoolPointer(),
+		LinkToOpen:        plan.LinkToOpen.ValueStringPointer(),
+		Method:            plan.Method.ValueStringPointer(),
+		NotificationMuted: plan.NotificationMuted.ValueBoolPointer(),
+		Paused:            plan.Paused.ValueBoolPointer(),
+		Processor:         plan.Processor.ValueStringPointer(),
+		Proxy:             plan.Proxy.ValueStringPointer(),
+		Tags:              &tags,
+		Title:             plan.Title.ValueStringPointer(),
+		WebdriverDelay:    plan.WebdriverDelay.ValueInt64Pointer(),
+		URL:               plan.Url.ValueStringPointer(),
 	}
 
 	err := r.client.UpdateWatch(plan.ID.ValueString(), &watch)

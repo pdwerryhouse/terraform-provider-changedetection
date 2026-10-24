@@ -3,7 +3,7 @@ module terraform-provider-changedetection
 go 1.26.8
 
 require (
-	codeberg.org/pdwerryhouse/changedetection-client-go v0.0.7
+	codeberg.org/pdwerryhouse/changedetection-client-go v0.0.8
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 )
 
