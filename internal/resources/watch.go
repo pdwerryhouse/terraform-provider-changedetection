@@ -53,22 +53,35 @@ type watchResource struct {
 }
 
 type watchResourceModel struct {
-	ID                types.String `tfsdk:"id"`
-	Body              types.String `tfsdk:"body"`
-	CheckUniqueLines  types.Bool   `tfsdk:"check_unique_lines"`
-	FetchBackend      types.String `tfsdk:"fetch_backend"`
-	Headers           types.Map    `tfsdk:"headers"`
-	IgnoreStatusCodes types.Bool   `tfsdk:"ignore_status_codes"`
-	LinkToOpen        types.String `tfsdk:"link_to_open"`
-	Method            types.String `tfsdk:"method"`
-	NotificationMuted types.Bool   `tfsdk:"notification_muted"`
-	Paused            types.Bool   `tfsdk:"paused"`
-	Processor         types.String `tfsdk:"processor"`
-	Proxy             types.String `tfsdk:"proxy"`
-	Tags              types.List   `tfsdk:"tags"`
-	Title             types.String `tfsdk:"title"`
-	WebdriverDelay    types.Int64  `tfsdk:"webdriver_delay"`
-	Url               types.String `tfsdk:"url"`
+	ID                            types.String `tfsdk:"id"`
+	Body                          types.String `tfsdk:"body"`
+	CheckUniqueLines              types.Bool   `tfsdk:"check_unique_lines"`
+	FetchBackend                  types.String `tfsdk:"fetch_backend"`
+	FilterFailureNotificationSend types.Bool   `tfsdk:"filter_failure_notification_send"`
+	FilterTextAdded               types.Bool   `tfsdk:"filter_text_added"`
+	FilterTextRemoved             types.Bool   `tfsdk:"filter_text_removed"`
+	FilterTextReplaced            types.Bool   `tfsdk:"filter_text_replaced"`
+	FollowPriceChanges            types.Bool   `tfsdk:"follow_price_changes"`
+	Headers                       types.Map    `tfsdk:"headers"`
+	IgnoreStatusCodes             types.Bool   `tfsdk:"ignore_status_codes"`
+	InStockOnly                   types.Bool   `tfsdk:"in_stock_only"`
+	LinkToOpen                    types.String `tfsdk:"link_to_open"`
+	LlmBackendProfile             types.Bool   `tfsdk:"llm_backend_profile"`
+	Method                        types.String `tfsdk:"method"`
+	NotificationMuted             types.Bool   `tfsdk:"notification_muted"`
+	NotificationScreenshot        types.Bool   `tfsdk:"notification_screenshot"`
+	Paused                        types.Bool   `tfsdk:"paused"`
+	Processor                     types.String `tfsdk:"processor"`
+	Proxy                         types.String `tfsdk:"proxy"`
+	RemoveDuplicateLines          types.Bool   `tfsdk:"remove_duplicate_lines"`
+	SortTextAlphabetically        types.Bool   `tfsdk:"sort_text_alphabetically"`
+	StripIgnoredLines             types.Bool   `tfsdk:"strip_ignored_lines"`
+	Tags                          types.List   `tfsdk:"tags"`
+	Title                         types.String `tfsdk:"title"`
+	TrimTextWhitespace            types.Bool   `tfsdk:"trim_text_whitespace"`
+	WebdriverDelay                types.Int64  `tfsdk:"webdriver_delay"`
+	Url                           types.String `tfsdk:"url"`
+	UsePageTitleInList            types.Bool   `tfsdk:"use_page_title_in_list"`
 }
 
 func (r *watchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -117,6 +130,12 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
+			},
+			"in_stock_only": schema.BoolAttribute{
+				Description: "Only trigger on in-stock transitions (restock_diff processor). Default is true.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
 			},
 			"link_to_open": schema.StringAttribute{
 				Description: "Optional human facing URL to open in the browser.",
@@ -177,6 +196,78 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Description: "The watch url.",
 				Required:    true,
 			},
+			"filter_text_added": schema.BoolAttribute{
+				Description: "Include added text in change detection. Default is true.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
+			},
+			"filter_text_removed": schema.BoolAttribute{
+				Description: "Include removed text in change detection. Default is true.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
+			},
+			"filter_text_replaced": schema.BoolAttribute{
+				Description: "Include replaced text in change detection. Default is true.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
+			},
+			"follow_price_changes": schema.BoolAttribute{
+				Description: "Monitor and track price changes (restock_diff processor). Default is true.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
+			},
+			"remove_duplicate_lines": schema.BoolAttribute{
+				Description: "Remove duplicate lines from content. Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
+			"sort_text_alphabetically": schema.BoolAttribute{
+				Description: "Sort lines alphabetically before comparison. Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
+			"strip_ignored_lines": schema.BoolAttribute{
+				Description: "Remove lines matching ignore patterns. Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
+			"trim_text_whitespace": schema.BoolAttribute{
+				Description: "Strip leading/trailing whitespace from text. Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
+			"filter_failure_notification_send": schema.BoolAttribute{
+				Description: "Send notification when filters fail to match content. Default is true.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
+			},
+			"llm_backend_profile": schema.BoolAttribute{
+				Description: "Whether AI/LLM features are enabled. Default is true.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
+			},
+			"notification_screenshot": schema.BoolAttribute{
+				Description: "Include screenshot in notifications (if supported by notification URL). Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
+			"use_page_title_in_list": schema.BoolAttribute{
+				Description: "Display page title in watch list. Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
+			},
 		},
 	}
 }
@@ -204,20 +295,33 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	watch := changedetectionclient.CreateWatchReq{
-		Body:              plan.Body.ValueStringPointer(),
-		CheckUniqueLines:  plan.CheckUniqueLines.ValueBoolPointer(),
-		FetchBackend:      plan.FetchBackend.ValueStringPointer(),
-		IgnoreStatusCodes: plan.IgnoreStatusCodes.ValueBoolPointer(),
-		LinkToOpen:        plan.LinkToOpen.ValueStringPointer(),
-		Method:            plan.Method.ValueStringPointer(),
-		NotificationMuted: plan.NotificationMuted.ValueBoolPointer(),
-		Paused:            plan.Paused.ValueBoolPointer(),
-		Processor:         plan.Processor.ValueStringPointer(),
-		Proxy:             plan.Proxy.ValueStringPointer(),
-		Tags:              &tags,
-		Title:             plan.Title.ValueStringPointer(),
-		URL:               plan.Url.ValueString(),
-		WebdriverDelay:    plan.WebdriverDelay.ValueInt64Pointer(),
+		Body:                          plan.Body.ValueStringPointer(),
+		CheckUniqueLines:              plan.CheckUniqueLines.ValueBoolPointer(),
+		FetchBackend:                  plan.FetchBackend.ValueStringPointer(),
+		FilterFailureNotificationSend: plan.FilterFailureNotificationSend.ValueBoolPointer(),
+		FilterTextAdded:               plan.FilterTextAdded.ValueBoolPointer(),
+		FilterTextRemoved:             plan.FilterTextRemoved.ValueBoolPointer(),
+		FilterTextReplaced:            plan.FilterTextReplaced.ValueBoolPointer(),
+		FollowPriceChanges:            plan.FollowPriceChanges.ValueBoolPointer(),
+		IgnoreStatusCodes:             plan.IgnoreStatusCodes.ValueBoolPointer(),
+		InStockOnly:                   plan.InStockOnly.ValueBoolPointer(),
+		LinkToOpen:                    plan.LinkToOpen.ValueStringPointer(),
+		Method:                        plan.Method.ValueStringPointer(),
+		NotificationMuted:             plan.NotificationMuted.ValueBoolPointer(),
+		NotificationScreenshot:        plan.NotificationScreenshot.ValueBoolPointer(),
+		Paused:                        plan.Paused.ValueBoolPointer(),
+		Processor:                     plan.Processor.ValueStringPointer(),
+		Proxy:                         plan.Proxy.ValueStringPointer(),
+		RemoveDuplicateLines:          plan.RemoveDuplicateLines.ValueBoolPointer(),
+		SortTextAlphabetically:        plan.SortTextAlphabetically.ValueBoolPointer(),
+		StripIgnoredLines:             plan.StripIgnoredLines.ValueBoolPointer(),
+		Tags:                          &tags,
+		Title:                         plan.Title.ValueStringPointer(),
+		TrimTextWhitespace:            plan.TrimTextWhitespace.ValueBoolPointer(),
+		URL:                           plan.Url.ValueString(),
+		WebdriverDelay:                plan.WebdriverDelay.ValueInt64Pointer(),
+		LlmBackendProfile:             plan.LlmBackendProfile.ValueBoolPointer(),
+		UsePageTitleInList:            plan.UsePageTitleInList.ValueBoolPointer(),
 	}
 
 	newWatch, err := r.client.CreateWatch(watch)
@@ -270,18 +374,31 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	state.Body = types.StringValue(watch.Body)
 	state.CheckUniqueLines = types.BoolValue(watch.CheckUniqueLines)
 	state.FetchBackend = types.StringValue(watch.FetchBackend)
+	state.FilterFailureNotificationSend = types.BoolValue(watch.FilterFailureNotificationSend)
+	state.FilterTextAdded = types.BoolValue(watch.FilterTextAdded)
+	state.FilterTextRemoved = types.BoolValue(watch.FilterTextRemoved)
+	state.FilterTextReplaced = types.BoolValue(watch.FilterTextReplaced)
+	state.FollowPriceChanges = types.BoolValue(watch.FollowPriceChanges)
 	state.Headers = headers
 	state.IgnoreStatusCodes = types.BoolValue(watch.IgnoreStatusCodes)
+	state.InStockOnly = types.BoolValue(watch.InStockOnly)
 	state.LinkToOpen = types.StringValue(watch.LinkToOpen)
+	state.LlmBackendProfile = types.BoolValue(watch.LlmBackendProfile)
 	state.Method = types.StringValue(watch.Method)
 	state.NotificationMuted = types.BoolValue(watch.NotificationMuted)
+	state.NotificationScreenshot = types.BoolValue(watch.NotificationScreenshot)
 	state.Paused = types.BoolValue(watch.Paused)
 	state.Processor = types.StringValue(watch.Processor)
 	state.Proxy = types.StringValue(watch.Proxy)
+	state.RemoveDuplicateLines = types.BoolValue(watch.RemoveDuplicateLines)
+	state.SortTextAlphabetically = types.BoolValue(watch.SortTextAlphabetically)
+	state.StripIgnoredLines = types.BoolValue(watch.StripIgnoredLines)
+	state.TrimTextWhitespace = types.BoolValue(watch.TrimTextWhitespace)
 	state.Tags = tags
 	state.Title = types.StringValue(watch.Title)
 	state.WebdriverDelay = types.Int64Value(watch.WebdriverDelay)
 	state.Url = types.StringValue(watch.URL)
+	state.UsePageTitleInList = types.BoolValue(watch.UsePageTitleInList)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -313,21 +430,33 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	watch := changedetectionclient.UpdateWatchReq{
-		Body:              plan.Body.ValueStringPointer(),
-		CheckUniqueLines:  plan.CheckUniqueLines.ValueBoolPointer(),
-		FetchBackend:      plan.FetchBackend.ValueStringPointer(),
-		Headers:           &headers,
-		IgnoreStatusCodes: plan.IgnoreStatusCodes.ValueBoolPointer(),
-		LinkToOpen:        plan.LinkToOpen.ValueStringPointer(),
-		Method:            plan.Method.ValueStringPointer(),
-		NotificationMuted: plan.NotificationMuted.ValueBoolPointer(),
-		Paused:            plan.Paused.ValueBoolPointer(),
-		Processor:         plan.Processor.ValueStringPointer(),
-		Proxy:             plan.Proxy.ValueStringPointer(),
-		Tags:              &tags,
-		Title:             plan.Title.ValueStringPointer(),
-		WebdriverDelay:    plan.WebdriverDelay.ValueInt64Pointer(),
-		URL:               plan.Url.ValueStringPointer(),
+		Body:                          plan.Body.ValueStringPointer(),
+		CheckUniqueLines:              plan.CheckUniqueLines.ValueBoolPointer(),
+		FetchBackend:                  plan.FetchBackend.ValueStringPointer(),
+		FilterFailureNotificationSend: plan.FilterFailureNotificationSend.ValueBoolPointer(),
+		FilterTextAdded:               plan.FilterTextAdded.ValueBoolPointer(),
+		FilterTextRemoved:             plan.FilterTextRemoved.ValueBoolPointer(),
+		FilterTextReplaced:            plan.FilterTextReplaced.ValueBoolPointer(),
+		FollowPriceChanges:            plan.FollowPriceChanges.ValueBoolPointer(),
+		IgnoreStatusCodes:             plan.IgnoreStatusCodes.ValueBoolPointer(),
+		InStockOnly:                   plan.InStockOnly.ValueBoolPointer(),
+		LinkToOpen:                    plan.LinkToOpen.ValueStringPointer(),
+		Method:                        plan.Method.ValueStringPointer(),
+		NotificationMuted:             plan.NotificationMuted.ValueBoolPointer(),
+		NotificationScreenshot:        plan.NotificationScreenshot.ValueBoolPointer(),
+		Paused:                        plan.Paused.ValueBoolPointer(),
+		Processor:                     plan.Processor.ValueStringPointer(),
+		Proxy:                         plan.Proxy.ValueStringPointer(),
+		RemoveDuplicateLines:          plan.RemoveDuplicateLines.ValueBoolPointer(),
+		SortTextAlphabetically:        plan.SortTextAlphabetically.ValueBoolPointer(),
+		StripIgnoredLines:             plan.StripIgnoredLines.ValueBoolPointer(),
+		Tags:                          &tags,
+		Title:                         plan.Title.ValueStringPointer(),
+		TrimTextWhitespace:            plan.TrimTextWhitespace.ValueBoolPointer(),
+		URL:                           plan.Url.ValueStringPointer(),
+		WebdriverDelay:                plan.WebdriverDelay.ValueInt64Pointer(),
+		LlmBackendProfile:             plan.LlmBackendProfile.ValueBoolPointer(),
+		UsePageTitleInList:            plan.UsePageTitleInList.ValueBoolPointer(),
 	}
 
 	err := r.client.UpdateWatch(plan.ID.ValueString(), &watch)

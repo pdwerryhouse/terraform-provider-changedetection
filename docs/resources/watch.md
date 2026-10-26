@@ -53,16 +53,29 @@ resource "changedetection_watch" "localhost" {
 - `body` (String) HTTP Request Body.
 - `check_unique_lines` (Boolean) Compare against all history for unique lines. Default is false.
 - `fetch_backend` (String) Backend to use for fetching content: system, html_requests, html_webdriver, extra_browser_* . Default is system.
+- `filter_failure_notification_send` (Boolean) Send notification when filters fail to match content. Default is true.
+- `filter_text_added` (Boolean) Include added text in change detection. Default is true.
+- `filter_text_removed` (Boolean) Include removed text in change detection. Default is true.
+- `filter_text_replaced` (Boolean) Include replaced text in change detection. Default is true.
+- `follow_price_changes` (Boolean) Monitor and track price changes (restock_diff processor). Default is true.
 - `headers` (Map of String) Map of headers.
 - `ignore_status_codes` (Boolean) Ignore HTTP status code errors. Default is false.
+- `in_stock_only` (Boolean) Only trigger on in-stock transitions (restock_diff processor). Default is true.
 - `link_to_open` (String) Optional human facing URL to open in the browser.
+- `llm_backend_profile` (Boolean) Whether AI/LLM features are enabled. Default is true.
 - `method` (String) HTTP method to use (GET, POST, DELETE, PUT).
 - `notification_muted` (Boolean) Whether notifications are muted. Default is false.
+- `notification_screenshot` (Boolean) Include screenshot in notifications (if supported by notification URL). Default is false.
 - `paused` (Boolean) Whether the web page change monitor (watch) is paused.
 - `processor` (String) Processor mode to be used for change detection. text_json_diff or restock_diff.
 - `proxy` (String) Proxy configuration.
+- `remove_duplicate_lines` (Boolean) Remove duplicate lines from content. Default is false.
+- `sort_text_alphabetically` (Boolean) Sort lines alphabetically before comparison. Default is false.
+- `strip_ignored_lines` (Boolean) Remove lines matching ignore patterns. Default is false.
 - `tags` (List of String) List of tag uuids.
 - `title` (String) The watch's title.
+- `trim_text_whitespace` (Boolean) Strip leading/trailing whitespace from text. Default is false.
+- `use_page_title_in_list` (Boolean) Display page title in watch list. Default is false.
 - `webdriver_delay` (Number) Delay in seconds for the webdriver.
 
 ### Read-Only
