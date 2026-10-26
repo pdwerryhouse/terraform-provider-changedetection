@@ -55,6 +55,7 @@ type watchResource struct {
 type watchResourceModel struct {
 	ID                types.String `tfsdk:"id"`
 	Body              types.String `tfsdk:"body"`
+	CheckUniqueLines  types.Bool   `tfsdk:"check_unique_lines"`
 	FetchBackend      types.String `tfsdk:"fetch_backend"`
 	Headers           types.Map    `tfsdk:"headers"`
 	IgnoreStatusCodes types.Bool   `tfsdk:"ignore_status_codes"`
@@ -89,6 +90,12 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString(""),
+			},
+			"check_unique_lines": schema.BoolAttribute{
+				Description: "Compare against all history for unique lines. Default is false.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"fetch_backend": schema.StringAttribute{
 				Description: "Backend to use for fetching content: system, html_requests, html_webdriver, extra_browser_* . Default is system.",
@@ -198,6 +205,7 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	watch := changedetectionclient.CreateWatchReq{
 		Body:              plan.Body.ValueStringPointer(),
+		CheckUniqueLines:  plan.CheckUniqueLines.ValueBoolPointer(),
 		FetchBackend:      plan.FetchBackend.ValueStringPointer(),
 		IgnoreStatusCodes: plan.IgnoreStatusCodes.ValueBoolPointer(),
 		LinkToOpen:        plan.LinkToOpen.ValueStringPointer(),
@@ -260,6 +268,7 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	state.Body = types.StringValue(watch.Body)
+	state.CheckUniqueLines = types.BoolValue(watch.CheckUniqueLines)
 	state.FetchBackend = types.StringValue(watch.FetchBackend)
 	state.Headers = headers
 	state.IgnoreStatusCodes = types.BoolValue(watch.IgnoreStatusCodes)
@@ -305,6 +314,7 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 
 	watch := changedetectionclient.UpdateWatchReq{
 		Body:              plan.Body.ValueStringPointer(),
+		CheckUniqueLines:  plan.CheckUniqueLines.ValueBoolPointer(),
 		FetchBackend:      plan.FetchBackend.ValueStringPointer(),
 		Headers:           &headers,
 		IgnoreStatusCodes: plan.IgnoreStatusCodes.ValueBoolPointer(),

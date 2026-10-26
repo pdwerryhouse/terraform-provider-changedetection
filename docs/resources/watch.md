@@ -51,6 +51,7 @@ resource "changedetection_watch" "localhost" {
 ### Optional
 
 - `body` (String) HTTP Request Body.
+- `check_unique_lines` (Boolean) Compare against all history for unique lines. Default is false.
 - `fetch_backend` (String) Backend to use for fetching content: system, html_requests, html_webdriver, extra_browser_* . Default is system.
 - `headers` (Map of String) Map of headers.
 - `ignore_status_codes` (Boolean) Ignore HTTP status code errors. Default is false.
