@@ -77,6 +77,7 @@ type watchResourceModel struct {
 	SortTextAlphabetically        types.Bool   `tfsdk:"sort_text_alphabetically"`
 	StripIgnoredLines             types.Bool   `tfsdk:"strip_ignored_lines"`
 	Tags                          types.List   `tfsdk:"tags"`
+	TimeBetweenCheckUseDefault    types.Bool   `tfsdk:"time_between_check_use_default"`
 	Title                         types.String `tfsdk:"title"`
 	TrimTextWhitespace            types.Bool   `tfsdk:"trim_text_whitespace"`
 	WebdriverDelay                types.Int64  `tfsdk:"webdriver_delay"`
@@ -181,6 +182,12 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Default: listdefault.StaticValue(
 					types.ListValueMust(types.StringType, []attr.Value{}),
 				),
+			},
+			"time_between_check_use_default": schema.BoolAttribute{
+				Description: "Whether to use global settings for time between checks. Default is true.",
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
 			},
 			"title": schema.StringAttribute{
 				Description: "The watch's title.",
@@ -316,6 +323,7 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 		SortTextAlphabetically:        plan.SortTextAlphabetically.ValueBoolPointer(),
 		StripIgnoredLines:             plan.StripIgnoredLines.ValueBoolPointer(),
 		Tags:                          &tags,
+		TimeBetweenCheckUseDefault:    plan.TimeBetweenCheckUseDefault.ValueBoolPointer(),
 		Title:                         plan.Title.ValueStringPointer(),
 		TrimTextWhitespace:            plan.TrimTextWhitespace.ValueBoolPointer(),
 		URL:                           plan.Url.ValueString(),
@@ -393,6 +401,7 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	state.RemoveDuplicateLines = types.BoolValue(watch.RemoveDuplicateLines)
 	state.SortTextAlphabetically = types.BoolValue(watch.SortTextAlphabetically)
 	state.StripIgnoredLines = types.BoolValue(watch.StripIgnoredLines)
+	state.TimeBetweenCheckUseDefault = types.BoolValue(watch.TimeBetweenCheckUseDefault)
 	state.TrimTextWhitespace = types.BoolValue(watch.TrimTextWhitespace)
 	state.Tags = tags
 	state.Title = types.StringValue(watch.Title)
@@ -451,6 +460,7 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		SortTextAlphabetically:        plan.SortTextAlphabetically.ValueBoolPointer(),
 		StripIgnoredLines:             plan.StripIgnoredLines.ValueBoolPointer(),
 		Tags:                          &tags,
+		TimeBetweenCheckUseDefault:    plan.TimeBetweenCheckUseDefault.ValueBoolPointer(),
 		Title:                         plan.Title.ValueStringPointer(),
 		TrimTextWhitespace:            plan.TrimTextWhitespace.ValueBoolPointer(),
 		URL:                           plan.Url.ValueStringPointer(),
