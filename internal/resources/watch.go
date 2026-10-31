@@ -52,6 +52,14 @@ type watchResource struct {
 	client *changedetectionclient.Client
 }
 
+type TimeBetweenCheckModel struct {
+	Weeks   types.Int64 `tfsdk:"weeks"`
+	Days    types.Int64 `tfsdk:"days"`
+	Hours   types.Int64 `tfsdk:"hours"`
+	Minutes types.Int64 `tfsdk:"minutes"`
+	Seconds types.Int64 `tfsdk:"seconds"`
+}
+
 type watchResourceModel struct {
 	ID                            types.String `tfsdk:"id"`
 	Body                          types.String `tfsdk:"body"`
@@ -77,6 +85,7 @@ type watchResourceModel struct {
 	SortTextAlphabetically        types.Bool   `tfsdk:"sort_text_alphabetically"`
 	StripIgnoredLines             types.Bool   `tfsdk:"strip_ignored_lines"`
 	Tags                          types.List   `tfsdk:"tags"`
+	TimeBetweenCheck              types.Object `tfsdk:"time_between_check"`
 	TimeBetweenCheckUseDefault    types.Bool   `tfsdk:"time_between_check_use_default"`
 	Title                         types.String `tfsdk:"title"`
 	TrimTextWhitespace            types.Bool   `tfsdk:"trim_text_whitespace"`
@@ -182,6 +191,43 @@ func (r *watchResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Default: listdefault.StaticValue(
 					types.ListValueMust(types.StringType, []attr.Value{}),
 				),
+			},
+			"time_between_check": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Time intervals between checks.",
+				Attributes: map[string]schema.Attribute{
+					"weeks": schema.Int64Attribute{
+						Description: "Number of weeks.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(0),
+					},
+					"days": schema.Int64Attribute{
+						Description: "Number of days.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(0),
+					},
+					"hours": schema.Int64Attribute{
+						Description: "Number of hours.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(0),
+					},
+					"minutes": schema.Int64Attribute{
+						Description: "Number of minutes.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(0),
+					},
+					"seconds": schema.Int64Attribute{
+						Description: "Number of seconds.",
+						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(0),
+					},
+				},
 			},
 			"time_between_check_use_default": schema.BoolAttribute{
 				Description: "Whether to use global settings for time between checks. Default is true.",
@@ -301,6 +347,26 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	/*
+		timeBetweenCheck := changedetectionclient.TimeBetweenCheckReq{
+			Weeks:   plan.TimeBetweenCheck.Weeks.ValueInt64Pointer(),
+			Days:    plan.TimeBetweenCheck.Days.ValueInt64Pointer(),
+			Hours:   plan.TimeBetweenCheck.Hours.ValueInt64Pointer(),
+			Minutes: plan.TimeBetweenCheck.Minutes.ValueInt64Pointer(),
+			Seconds: plan.TimeBetweenCheck.Seconds.ValueInt64Pointer(),
+		}
+	*/
+
+	x := int64(0)
+
+	timeBetweenCheck := changedetectionclient.TimeBetweenCheckReq{
+		Weeks:   &x,
+		Days:    &x,
+		Hours:   &x,
+		Minutes: &x,
+		Seconds: &x,
+	}
+
 	watch := changedetectionclient.CreateWatchReq{
 		Body:                          plan.Body.ValueStringPointer(),
 		CheckUniqueLines:              plan.CheckUniqueLines.ValueBoolPointer(),
@@ -323,6 +389,7 @@ func (r *watchResource) Create(ctx context.Context, req resource.CreateRequest, 
 		SortTextAlphabetically:        plan.SortTextAlphabetically.ValueBoolPointer(),
 		StripIgnoredLines:             plan.StripIgnoredLines.ValueBoolPointer(),
 		Tags:                          &tags,
+		TimeBetweenCheck:              &timeBetweenCheck,
 		TimeBetweenCheckUseDefault:    plan.TimeBetweenCheckUseDefault.ValueBoolPointer(),
 		Title:                         plan.Title.ValueStringPointer(),
 		TrimTextWhitespace:            plan.TrimTextWhitespace.ValueBoolPointer(),
@@ -358,6 +425,10 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
+	if state.TimeBetweenCheck == nil {
+		state.TimeBetweenCheck = &TimeBetweenCheckModel{}
+	}
+
 	watch, err := r.client.GetWatch(state.ID.ValueString(), nil)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -378,6 +449,16 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	/*
+		timeBetweenCheck := timeBetweenCheckModel{
+			Weeks:   types.Int64Value(*(watch.TimeBetweenCheck.Weeks)),
+			Days:    types.Int64Value(*(watch.TimeBetweenCheck.Days)),
+			Hours:   types.Int64Value(*(watch.TimeBetweenCheck.Hours)),
+			Minutes: types.Int64Value(*(watch.TimeBetweenCheck.Minutes)),
+			Seconds: types.Int64Value(*(watch.TimeBetweenCheck.Seconds)),
+		}
+	*/
 
 	state.Body = types.StringValue(watch.Body)
 	state.CheckUniqueLines = types.BoolValue(watch.CheckUniqueLines)
@@ -401,7 +482,15 @@ func (r *watchResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	state.RemoveDuplicateLines = types.BoolValue(watch.RemoveDuplicateLines)
 	state.SortTextAlphabetically = types.BoolValue(watch.SortTextAlphabetically)
 	state.StripIgnoredLines = types.BoolValue(watch.StripIgnoredLines)
+
+	state.TimeBetweenCheck.Weeks = types.Int64Value(watch.TimeBetweenCheck.Weeks)
+	state.TimeBetweenCheck.Days = types.Int64Value(watch.TimeBetweenCheck.Days)
+	state.TimeBetweenCheck.Hours = types.Int64Value(watch.TimeBetweenCheck.Hours)
+	state.TimeBetweenCheck.Minutes = types.Int64Value(watch.TimeBetweenCheck.Minutes)
+	state.TimeBetweenCheck.Seconds = types.Int64Value(watch.TimeBetweenCheck.Seconds)
+
 	state.TimeBetweenCheckUseDefault = types.BoolValue(watch.TimeBetweenCheckUseDefault)
+
 	state.TrimTextWhitespace = types.BoolValue(watch.TrimTextWhitespace)
 	state.Tags = tags
 	state.Title = types.StringValue(watch.Title)
@@ -438,6 +527,14 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	timeBetweenCheck := changedetectionclient.TimeBetweenCheckReq{
+		Weeks:   plan.TimeBetweenCheck.Weeks.ValueInt64Pointer(),
+		Days:    plan.TimeBetweenCheck.Days.ValueInt64Pointer(),
+		Hours:   plan.TimeBetweenCheck.Hours.ValueInt64Pointer(),
+		Minutes: plan.TimeBetweenCheck.Minutes.ValueInt64Pointer(),
+		Seconds: plan.TimeBetweenCheck.Seconds.ValueInt64Pointer(),
+	}
+
 	watch := changedetectionclient.UpdateWatchReq{
 		Body:                          plan.Body.ValueStringPointer(),
 		CheckUniqueLines:              plan.CheckUniqueLines.ValueBoolPointer(),
@@ -460,6 +557,7 @@ func (r *watchResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		SortTextAlphabetically:        plan.SortTextAlphabetically.ValueBoolPointer(),
 		StripIgnoredLines:             plan.StripIgnoredLines.ValueBoolPointer(),
 		Tags:                          &tags,
+		TimeBetweenCheck:              &timeBetweenCheck,
 		TimeBetweenCheckUseDefault:    plan.TimeBetweenCheckUseDefault.ValueBoolPointer(),
 		Title:                         plan.Title.ValueStringPointer(),
 		TrimTextWhitespace:            plan.TrimTextWhitespace.ValueBoolPointer(),
