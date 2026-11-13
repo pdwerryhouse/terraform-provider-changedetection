@@ -163,5 +163,6 @@ func (p *changedetectionProvider) Resources(ctx context.Context) []func() resour
 	return []func() resource.Resource{
 		resources.NewWatchResource,
 		resources.NewTagResource,
+		resources.NewNotificationResource,
 	}
 }
