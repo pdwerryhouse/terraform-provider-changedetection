@@ -1,5 +1,5 @@
-codeberg.org/pdwerryhouse/changedetection-client-go v0.0.10 h1:sPiKzY9fTbUnBt/Bwfa7fWAOAqeNKH9paWwWB9JcNJQ=
-codeberg.org/pdwerryhouse/changedetection-client-go v0.0.10/go.mod h1:/z6u++kzQy+r7NwwwiiRM6kt2mlRZqGSKzWtTvElD/k=
+codeberg.org/pdwerryhouse/changedetection-client-go v0.0.12 h1:LeKgEyCH/DStzerBXdICWiXkEgjnrBwPiyq6R/asWyg=
+codeberg.org/pdwerryhouse/changedetection-client-go v0.0.12/go.mod h1:S+bznQpHJhNSGoFhimVfK+SOQkpiJ6jkaLqQ0dDf0XU=
 dario.cat/mergo v1.0.1 h1:Ra4+bf83h2ztPIQYNP99R6m+Y7KfnARDfID+a+vLl4s=
 dario.cat/mergo v1.0.1/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
 github.com/AlecAivazis/survey/v2 v2.3.7 h1:6I/u8FvytdGsgonrYsVn2t8t4QiRnh6QSTqkkhIiSjQ=

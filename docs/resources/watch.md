@@ -73,6 +73,7 @@ resource "changedetection_watch" "localhost" {
 - `sort_text_alphabetically` (Boolean) Sort lines alphabetically before comparison. Default is false.
 - `strip_ignored_lines` (Boolean) Remove lines matching ignore patterns. Default is false.
 - `tags` (List of String) List of tag uuids.
+- `time_between_check_use_default` (Boolean) Whether to use global settings for time between checks. Default is true.
 - `title` (String) The watch's title.
 - `trim_text_whitespace` (Boolean) Strip leading/trailing whitespace from text. Default is false.
 - `use_page_title_in_list` (Boolean) Display page title in watch list. Default is false.

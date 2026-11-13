@@ -155,6 +155,7 @@ func (p *changedetectionProvider) DataSources(ctx context.Context) []func() data
 	return []func() datasource.DataSource{
 		datasources.NewWatchesDataSource,
 		datasources.NewTagsDataSource,
+		datasources.NewNotificationsDataSource,
 	}
 }
 
